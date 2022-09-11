@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Written by 유신애"/>
+<title>magnifying image by dragging</title>
+<style>
+  .canvas {cursor: crosshair;}
+  .resetButton {display: block; margin-bottom: 10px;}
+  .guideDiv {
+    position: absolute;
+    border: 3px solid #333;
+    cursor: crosshair;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <div class="box">
+    <input type="button" class="resetButton" value="Reset">
+    <div class="guideDiv"></div>
+    <canvas class="canvas" width="700px" height="860px"></canvas>
+  </div>
+  <script>
+    let canvas = document.querySelector(".canvas"),
+        context = canvas.getContext("2d"),
+        guideDiv = document.querySelector(".guideDiv"),
+        resetButton = document.querySelector(".resetButton"),
+        image = new Image(),
+        mousedown = {},
+        magnifiedArea = {},
+        dragging = false;
+
+    function magnifyingStart(x, y) {
+      mousedown.x = x;
+      mousedown.y = y;
+
+      magnifiedArea.left = mousedown.x;
+      magnifiedArea.top = mousedown.y;
+
+      moveGuideDiv();
+      showGuideDiv();
+
+      dragging = true;
+    }
+
+    function guideDivDragging(x, y) {
+      magnifiedArea.left = x < mousedown.x ? x : mousedown.x;
+      magnifiedArea.top = y < mousedown.y ? y : mousedown.y;
+      magnifiedArea.width = Math.abs(x - mousedown.x),
+      magnifiedArea.height = Math.abs(y - mousedown.y);
+      moveGuideDiv();
+      resizeGuideDiv();
+    }
+
+    function magnifyingEnd() {
+      var bbox = canvas.getBoundingClientRect();
+
+      try {
+        context.drawImage(
+          canvas, 
+          magnifiedArea.left - bbox.left, 
+          magnifiedArea.top - bbox.top,
+          magnifiedArea.width,
+          magnifiedArea.height,
+          0, 0,
+          canvas.width,
+          canvas.height
+        );
+      } catch(e) {
+        console.log(e);
+      }
+
+      resetMagnifiedArea();
+
+      guideDiv.style.width = 0;
+      guideDiv.style.height = 0;
+
+      hideGuideDiv();
+
+      dragging = false;
+    }
+
+    function moveGuideDiv() {
+      guideDiv.style.top = magnifiedArea.top + "px";
+      guideDiv.style.left = magnifiedArea.left + "px";
+    }
+
+    function resizeGuideDiv() {
+      guideDiv.style.width = magnifiedArea.width + "px";
+      guideDiv.style.height = magnifiedArea.height + "px";
+    }
+
+    function showGuideDiv() {
+      guideDiv.style.display = "inline";
+    }
+
+    function hideGuideDiv() {
+      guideDiv.style.display = "none";
+    }
+
+    function resetMagnifiedArea() {
+      magnifiedArea = {
+        top: 0, left: 0, width: 0, height: 0
+      };
+    }
+
+    canvas.onmousedown = function(e) {
+      var x = e.clientX, y = e.clientY;
+
+      e.preventDefault();
+      magnifyingStart(x, y);
+    }
+
+    window.onmousemove = function(e) {
+      var x = e.clientX, y = e.clientY;
+
+      e.preventDefault();
+      dragging && guideDivDragging(x, y);
+    }
+
+    window.onmouseup = function(e) {
+      e.preventDefault();
+      magnifyingEnd();
+    }
+
+    image.onload = function() {
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    }
+
+    resetButton.onclick = function(e) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    }
+
+    image.src = "sample.png";
+    </script>
+</body>
+</html>
