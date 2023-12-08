@@ -46,7 +46,7 @@
 
       if(snapshotButton.value === "Take Snapshot") {
         dataUrl = canvas.toDataURL();
-        clearInterval(loop);
+        //clearInterval(loop);
         snapshotImageElement.src = dataUrl;
         snapshotImageElement.classList.add("active");
         canvas.style.display = "none";
@@ -54,7 +54,7 @@
       } else {
         canvas.style.display = "block";
         snapshotImageElement.classList.remove("active");
-        loop = setInterval(drawClock, 1000);
+        //loop = setInterval(drawClock, 1000);
         snapshotButton.value = "Take Snapshot";
       }
     }
